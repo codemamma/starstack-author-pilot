@@ -1,14 +1,44 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './OutputPanel.css';
 
 interface OutputPanelProps {
   output: any;
+  error?: string | null;
 }
 
 type TabType = 'draft' | 'structure' | 'voice';
 
-function OutputPanel({ output }: OutputPanelProps) {
+function OutputPanel({ output, error }: OutputPanelProps) {
   const [activeTab, setActiveTab] = useState<TabType>('draft');
+
+  useEffect(() => {
+    if (output) {
+      setActiveTab('draft');
+    }
+  }, [output]);
+
+  if (error) {
+    return (
+      <div className="output-panel">
+        <h2>Output</h2>
+        <div className="empty-state">
+          <svg
+            width="80"
+            height="80"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <p style={{ color: '#e53e3e' }}>Error: {error}</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!output) {
     return (
