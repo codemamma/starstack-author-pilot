@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import './OutputPanel.css';
+import { highlightReusedPhrases } from '../lib/voiceReuse';
 
 interface OutputPanelProps {
   output: any;
@@ -90,7 +91,19 @@ function OutputPanel({ output, error }: OutputPanelProps) {
         {activeTab === 'draft' && (
           <div className="draft-content">
             <div className="content-wrapper">
-              {output.draft}
+              {output.outline?.notable_quotes && output.outline.notable_quotes.length > 0 ? (
+                highlightReusedPhrases(output.draft, output.outline.notable_quotes).map((segment, index) => (
+                  segment.highlighted ? (
+                    <mark key={index} style={{ backgroundColor: '#fef3c7', padding: '2px 0' }}>
+                      {segment.text}
+                    </mark>
+                  ) : (
+                    <span key={index}>{segment.text}</span>
+                  )
+                ))
+              ) : (
+                output.draft
+              )}
             </div>
           </div>
         )}
@@ -101,24 +114,44 @@ function OutputPanel({ output, error }: OutputPanelProps) {
           </div>
         )}
 
-        {activeTab === 'voice' && (
+        {activeTab === 'voice' && output.voiceAnalysis && (
           <div className="voice-content">
-            <div className="voice-metric">
-              <div className="metric-label">Voice Consistency Score</div>
-              <div className="metric-value">{output.voiceScore}%</div>
-            </div>
-
-            <div className="reused-phrases-section">
-              <h3>Reused Phrases</h3>
-              <div className="phrases-list">
-                {output.reusedPhrases.map((phrase: string, index: number) => (
-                  <div key={index} className="phrase-item">
-                    <span className="phrase-icon">→</span>
-                    {phrase}
-                  </div>
-                ))}
+            <div className="voice-metrics-grid">
+              <div className="voice-metric">
+                <div className="metric-label">Source Word Count</div>
+                <div className="metric-value">{output.voiceAnalysis.sourceWordCount}</div>
+              </div>
+              <div className="voice-metric">
+                <div className="metric-label">Draft Word Count</div>
+                <div className="metric-value">{output.voiceAnalysis.draftWordCount}</div>
+              </div>
+              <div className="voice-metric">
+                <div className="metric-label">Notable Quotes Count</div>
+                <div className="metric-value">{output.voiceAnalysis.notableQuotesCount}</div>
+              </div>
+              <div className="voice-metric">
+                <div className="metric-label">Reused Quotes Count</div>
+                <div className="metric-value">{output.voiceAnalysis.reusedQuoteCount}</div>
+              </div>
+              <div className="voice-metric">
+                <div className="metric-label">Quote Reuse Rate</div>
+                <div className="metric-value">{(output.voiceAnalysis.quoteReuseRate * 100).toFixed(1)}%</div>
               </div>
             </div>
+
+            {output.voiceAnalysis.topReusedPhrases.length > 0 && (
+              <div className="reused-phrases-section">
+                <h3>Reused Quotes</h3>
+                <div className="phrases-list">
+                  {output.voiceAnalysis.topReusedPhrases.map((phrase: string, index: number) => (
+                    <div key={index} className="phrase-item">
+                      <span className="phrase-icon">→</span>
+                      {phrase}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

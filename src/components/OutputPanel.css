@@ -89,24 +89,31 @@
   padding: 1rem 0;
 }
 
-.voice-metric {
-  background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
-  color: white;
-  padding: 2rem;
-  border-radius: 12px;
-  text-align: center;
+.voice-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
   margin-bottom: 2rem;
 }
 
+.voice-metric {
+  background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  text-align: center;
+}
+
 .metric-label {
-  font-size: 0.875rem;
+  font-size: 0.813rem;
   font-weight: 500;
   opacity: 0.9;
   margin-bottom: 0.5rem;
+  line-height: 1.3;
 }
 
 .metric-value {
-  font-size: 3rem;
+  font-size: 2rem;
   font-weight: 700;
 }
 

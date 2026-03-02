@@ -4,6 +4,7 @@ import InputPanel from '../components/InputPanel';
 import OutputPanel from '../components/OutputPanel';
 import './ReverseEngineerPage.css';
 import { extractOutline, assembleDraft } from '../lib/pilotApi';
+import { analyzeVoiceReuse } from '../lib/voiceReuse';
 
 function ReverseEngineerPage() {
   const [chapterText, setChapterText] = useState('');
@@ -38,10 +39,17 @@ function ReverseEngineerPage() {
         source: chapterText,
       });
 
+      const voiceAnalysis = analyzeVoiceReuse(
+        assembleResponse.draft,
+        chapterText,
+        outline.notable_quotes || []
+      );
+
       setOutput({
         draft: assembleResponse.draft,
         structure: JSON.stringify(outline, null, 2),
         outline,
+        voiceAnalysis,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
