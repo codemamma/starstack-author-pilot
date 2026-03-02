@@ -34,6 +34,7 @@ export interface AssembleDraftRequest {
   platform: "substack" | "linkedin";
   outline: ExtractOutlineResponse["outline"];
   source: string;
+  mode?: "strict";
 }
 
 export interface AssembleDraftResponse {

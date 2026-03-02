@@ -11,6 +11,7 @@ function ReverseEngineerPage() {
   const [authorName, setAuthorName] = useState('');
   const [platform, setPlatform] = useState('LinkedIn');
   const [engagementGoal, setEngagementGoal] = useState('Thought leadership');
+  const [strictMode, setStrictMode] = useState(true);
   const [output, setOutput] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +38,7 @@ function ReverseEngineerPage() {
         platform: platform.toLowerCase() as "substack" | "linkedin",
         outline,
         source: chapterText,
+        mode: strictMode ? "strict" : undefined,
       });
 
       const voiceAnalysis = analyzeVoiceReuse(
@@ -78,6 +80,8 @@ function ReverseEngineerPage() {
             setPlatform={setPlatform}
             engagementGoal={engagementGoal}
             setEngagementGoal={setEngagementGoal}
+            strictMode={strictMode}
+            setStrictMode={setStrictMode}
             onReverseEngineer={handleReverseEngineer}
             isProcessing={isProcessing}
           />

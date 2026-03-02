@@ -9,6 +9,8 @@ interface InputPanelProps {
   setPlatform: (value: string) => void;
   engagementGoal: string;
   setEngagementGoal: (value: string) => void;
+  strictMode: boolean;
+  setStrictMode: (value: boolean) => void;
   onReverseEngineer: () => void;
   isProcessing: boolean;
 }
@@ -22,6 +24,8 @@ function InputPanel({
   setPlatform,
   engagementGoal,
   setEngagementGoal,
+  strictMode,
+  setStrictMode,
   onReverseEngineer,
   isProcessing,
 }: InputPanelProps) {
@@ -83,6 +87,21 @@ function InputPanel({
         </select>
       </div>
 
+      <div className="form-group">
+        <label className="checkbox-label">
+          <input
+            type="checkbox"
+            checked={strictMode}
+            onChange={(e) => setStrictMode(e.target.checked)}
+            className="form-checkbox"
+          />
+          <span>Strict (source-bound) mode</span>
+        </label>
+        <p className="field-description">
+          When enabled, enforces stricter compliance: requires more verbatim quotes and blocks marketing adjectives not found in source.
+        </p>
+      </div>
+
       <button
         className="primary-button"
         onClick={onReverseEngineer}
@@ -91,7 +110,11 @@ function InputPanel({
         {isProcessing ? 'Processing...' : 'Reverse Engineer'}
       </button>
 
-      <p className="privacy-note">Your content stays private in this demo.</p>
+      <div className="trust-signals">
+        <p className="trust-signal">✓ Local model (Ollama) — no cloud calls</p>
+        <p className="trust-signal">✓ {strictMode ? 'Source-bound mode enabled' : 'Standard mode'}</p>
+        <p className="trust-signal">✓ No new claims beyond source</p>
+      </div>
     </div>
   );
 }

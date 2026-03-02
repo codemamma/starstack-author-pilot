@@ -112,6 +112,33 @@ OUTLINE TO ASSEMBLE:
 
 Write the Substack post:`;
 
+const ASSEMBLY_PROMPT_SUBSTACK_STRICT = `You are a content writer who transforms outlines into authentic posts. Your goal is to create a post that reads like it was written by the original author.
+
+STRICT MODE - NON-NEGOTIABLE RULES:
+1. Use ONLY ideas from the source material - no new concepts whatsoever
+2. Reuse original phrasing heavily - aim for 40% or more sentences as direct or lightly edited quotes
+3. Include AT LEAST 4 short verbatim quotes from the source
+4. FORBIDDEN WORDS unless they appear in source: "compelling", "thoughtful", "unique", "optimized", "resonates", "audience"
+5. No marketing filler or meta commentary
+6. Every claim must be traceable to the source
+7. Keep it grounded in what the source actually says
+
+STRUCTURE:
+- Title (grounded in source language)
+- Short intro paragraph
+- Headers for main sections
+- Short paragraphs (2-4 sentences)
+- End with a grounded reflective question
+- Add "Source-derived checklist" at the end listing: number of reused quotes and sections covered
+
+SOURCE MATERIAL:
+{SOURCE}
+
+OUTLINE TO ASSEMBLE:
+{OUTLINE}
+
+Write the Substack post:`;
+
 const ASSEMBLY_PROMPT_LINKEDIN = `You are a content writer who transforms outlines into authentic LinkedIn posts. Your goal is to create a post that reads like it was written by the original author.
 
 NON-NEGOTIABLE RULES:
@@ -132,6 +159,44 @@ OUTLINE TO ASSEMBLE:
 {OUTLINE}
 
 Write the LinkedIn post:`;
+
+const ASSEMBLY_PROMPT_LINKEDIN_STRICT = `You are a content writer who transforms outlines into authentic LinkedIn posts. Your goal is to create a post that reads like it was written by the original author.
+
+STRICT MODE - NON-NEGOTIABLE RULES:
+1. Use ONLY ideas from the source material - no new concepts whatsoever
+2. Reuse original phrasing heavily - aim for 40% or more sentences as direct or lightly edited quotes
+3. Include AT LEAST 3 short verbatim quotes from the source
+4. FORBIDDEN WORDS unless they appear in source: "compelling", "thoughtful", "unique", "optimized", "resonates", "audience"
+5. No marketing filler or meta commentary
+6. Strong hook in the first 2 lines
+7. Use numbered sections for clarity
+8. Short lines (1-2 sentences per paragraph)
+9. End with a grounded question
+10. Every claim must be traceable to the source
+
+SOURCE MATERIAL:
+{SOURCE}
+
+OUTLINE TO ASSEMBLE:
+{OUTLINE}
+
+Write the LinkedIn post:`;
+
+const REPAIR_PROMPT = `The following draft violates the strict source-bound rules. Rewrite it to comply:
+
+RULES TO ENFORCE:
+1. Remove any new claims not found in the source
+2. Increase verbatim quote reuse
+3. Remove forbidden marketing adjectives: "compelling", "thoughtful", "unique", "optimized", "resonates", "audience" (unless in source)
+4. Every statement must be traceable to the source
+
+DRAFT TO REPAIR:
+{DRAFT}
+
+SOURCE MATERIAL:
+{SOURCE}
+
+Rewrite the compliant version:`;
 
 app.post('/extract', async (req: Request, res: Response) => {
   try {
@@ -180,9 +245,47 @@ app.post('/extract', async (req: Request, res: Response) => {
   }
 });
 
+function countQuotesInDraft(draft: string, notableQuotes: string[]): number {
+  let count = 0;
+  for (const quote of notableQuotes) {
+    if (draft.includes(quote)) {
+      count++;
+    }
+  }
+  return count;
+}
+
+function hasForbiddenWords(draft: string, source: string): boolean {
+  const forbiddenWords = ['compelling', 'thoughtful', 'unique', 'optimized', 'resonates', 'audience'];
+  const sourceLower = source.toLowerCase();
+  const draftLower = draft.toLowerCase();
+
+  for (const word of forbiddenWords) {
+    if (draftLower.includes(word) && !sourceLower.includes(word)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function validateStrictMode(draft: string, source: string, platform: string, notableQuotes: string[]): { valid: boolean; reason?: string } {
+  const minQuotes = platform === 'substack' ? 4 : 3;
+  const quoteCount = countQuotesInDraft(draft, notableQuotes);
+
+  if (quoteCount < minQuotes) {
+    return { valid: false, reason: `Insufficient quotes: ${quoteCount}/${minQuotes}` };
+  }
+
+  if (hasForbiddenWords(draft, source)) {
+    return { valid: false, reason: 'Contains forbidden marketing adjectives not in source' };
+  }
+
+  return { valid: true };
+}
+
 app.post('/assemble', async (req: Request, res: Response) => {
   try {
-    const { platform, outline, source } = req.body;
+    const { platform, outline, source, mode } = req.body;
 
     if (!platform || !outline || !source) {
       return res.status(400).json({
@@ -196,15 +299,24 @@ app.post('/assemble', async (req: Request, res: Response) => {
       });
     }
 
-    const promptTemplate = platform === 'substack'
-      ? ASSEMBLY_PROMPT_SUBSTACK
-      : ASSEMBLY_PROMPT_LINKEDIN;
+    const isStrict = mode === 'strict';
+
+    let promptTemplate: string;
+    if (isStrict) {
+      promptTemplate = platform === 'substack'
+        ? ASSEMBLY_PROMPT_SUBSTACK_STRICT
+        : ASSEMBLY_PROMPT_LINKEDIN_STRICT;
+    } else {
+      promptTemplate = platform === 'substack'
+        ? ASSEMBLY_PROMPT_SUBSTACK
+        : ASSEMBLY_PROMPT_LINKEDIN;
+    }
 
     const prompt = promptTemplate
       .replace('{SOURCE}', source)
       .replace('{OUTLINE}', JSON.stringify(outline, null, 2));
 
-    const draft = await callOllama({
+    let draft = await callOllama({
       model: OLLAMA_MODEL,
       prompt,
       stream: false,
@@ -212,6 +324,27 @@ app.post('/assemble', async (req: Request, res: Response) => {
         temperature: 0.3,
       },
     });
+
+    if (isStrict && outline.notable_quotes) {
+      const validation = validateStrictMode(draft, source, platform, outline.notable_quotes);
+
+      if (!validation.valid) {
+        console.log(`Strict mode validation failed: ${validation.reason}. Attempting repair...`);
+
+        const repairPrompt = REPAIR_PROMPT
+          .replace('{DRAFT}', draft)
+          .replace('{SOURCE}', source);
+
+        draft = await callOllama({
+          model: OLLAMA_MODEL,
+          prompt: repairPrompt,
+          stream: false,
+          options: {
+            temperature: 0.2,
+          },
+        });
+      }
+    }
 
     res.json({ draft });
   } catch (error) {
