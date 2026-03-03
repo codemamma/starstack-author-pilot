@@ -57,29 +57,29 @@ node -v
 
 # Install Ollama
 
-- Install using homebrew:
+Install using homebrew:
 ```bash
 brew install ollama
 ```
 
-- verify installation
+Verify installation
 ```bash
 ollama --version
 ```
 
 # Pull the required model
 
-- This project defaults to:
+This project defaults to:
 ```code
 llama3.1:8b
 ```
 
-- pull the model
+pull the model
 ```bash
 ollama pull llama3.1:8b
 ```
 
-- verify:
+verify:
 ```bash
 ollama list
 ```
@@ -90,7 +90,7 @@ ollama list
 ollama serve
 ```
 
-- You should see:
+You should see:
 ```code
 Listening on 127.0.0.1:11434
 ```
@@ -189,7 +189,7 @@ The extraction prompt enforces:
 ```
 ---
 
-###Quick smke test
+### Quick smke test
 ```bash
 curl -X POST http://localhost:5176/extract \
   -H "Content-Type: application/json" \
