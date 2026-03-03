@@ -55,63 +55,73 @@ node -v
 
 ## Local development setup
 
-#Install Ollama
+# Install Ollama
 
 - Install using homebrew:
 ```bash
 brew install ollama
+```
 
 - verify installation
 ```bash
 ollama --version
+```
 
 # Pull the required model
 
 - This project defaults to:
 ```code
 llama3.1:8b
+```
 
 - pull the model
 ```bash
 ollama pull llama3.1:8b
+```
 
 - verify:
 ```bash
 ollama list
+```
 
-#Start Ollama
+# Start Ollama
 - Run:
 ```bash
 ollama serve
+```
 
 - You should see:
 ```code
 Listening on 127.0.0.1:11434
+```
 
 Leave this terminal window running
 
-#Start the local API Server
+# Start the local API Server
 Open a new terminal tab:
 ```bash
 cd server
 npm install
 npm run dev
+```
 
 Expected output:
 ```code
 Server running on http://localhost:5176
 Using Ollama model: llama3.1:8b
 Ollama URL: http://127.0.0.1:11434
+```
 
 # Start the frontend
 Open another terminal tab in the project window
 ```bash
 npm install
 npm run dev
-
+```
 Open the Vite local URL shown in terminal
 
 ---
+
 ## Architecture Overview
 Frontend (React)
     ↓
@@ -120,6 +130,7 @@ Local API Server (Express) – port 5176
 Ollama (Local LLM runtime) – port 11434
 
 ---
+
 ### Stage 1 – Source-Bound Structural Extraction
 ## Purpose
 
@@ -143,6 +154,7 @@ The extraction prompt enforces:
 - JSON-only output (no markdown, no commentary).
 - Verbatim phrasing preferred.
 - If unclear → omit rather than guess.
+
 ---
 
 ## Output Schema
@@ -174,6 +186,7 @@ The extraction prompt enforces:
     "tone_tags": ["string"]
   }
 }
+```
 ---
 
 ###Quick smke test
@@ -181,17 +194,21 @@ The extraction prompt enforces:
 curl -X POST http://localhost:5176/extract \
   -H "Content-Type: application/json" \
   -d '{"source":"Writing great prompts is a foundational skill in AI engineering.","author":"Sam Bhagwat"}'
+```
 
 If JSON is returned -> Stage 1 is working correctly
 
 ---
+
 ## macOS Localhost Fix(Important)
 Some macOS setups resolve localhost to IPv6 first, which can cause:
 ```code
 Extraction failed: fetch failed
+```
 
 if this occurs, restart the server with:
 ```bash
 OLLAMA_URL=http://127.0.0.1:11434 npm run dev
+```
 
 This forces IPv4 and resolves the issue.
