@@ -20,6 +20,15 @@ app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 app.use(express.json({ limit: '5mb' }));
 
+app.use((req: Request, res: Response, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    console.log(`${req.method} ${req.path} ${res.statusCode} ${duration}ms`);
+  });
+  next();
+});
+
 interface OllamaGenerateRequest {
   model: string;
   prompt: string;
@@ -142,6 +151,15 @@ OUTLINE TO ASSEMBLE:
 {OUTLINE}
 
 Write the LinkedIn post:`;
+
+app.get('/health', (req: Request, res: Response) => {
+  res.json({
+    ok: true,
+    time: new Date().toISOString(),
+    model: OLLAMA_MODEL,
+    ollamaUrl: OLLAMA_URL,
+  });
+});
 
 app.post('/extract', async (req: Request, res: Response) => {
   try {
