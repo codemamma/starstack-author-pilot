@@ -50,10 +50,10 @@ Check your Node version:
 
 ```bash
 node -v
-
+```
 ---
 
-##Local development setup
+## Local development setup
 
 #Install Ollama
 
