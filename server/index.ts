@@ -36,6 +36,7 @@ interface OllamaGenerateRequest {
   format?: string;
   options?: {
     temperature?: number;
+    num_predict?: number;
   };
 }
 
@@ -169,6 +170,12 @@ app.post('/extract', async (req: Request, res: Response) => {
       return res.status(400).json({ error: 'Missing required field: source' });
     }
 
+    if (source.length > 12000) {
+      return res.status(400).json({
+        error: 'Source too long for demo; please paste a smaller excerpt (<=12k chars).'
+      });
+    }
+
     const authorInstruction = author
       ? `Author attribution: ${author}`
       : 'Author: determine from source or set to null';
@@ -183,7 +190,8 @@ app.post('/extract', async (req: Request, res: Response) => {
       stream: false,
       format: 'json',
       options: {
-        temperature: 0.1,
+        temperature: 0,
+        num_predict: 700,
       },
     });
 
@@ -232,12 +240,15 @@ app.post('/assemble', async (req: Request, res: Response) => {
       .replace('{SOURCE}', source)
       .replace('{OUTLINE}', JSON.stringify(outline, null, 2));
 
+    const numPredict = platform === 'substack' ? 900 : 650;
+
     const draft = await callOllama({
       model: OLLAMA_MODEL,
       prompt,
       stream: false,
       options: {
         temperature: 0.3,
+        num_predict: numPredict,
       },
     });
 
