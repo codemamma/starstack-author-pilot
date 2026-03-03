@@ -40,6 +40,110 @@ The Stage 1 prompt enforces:
 5. If unclear → omit instead of guessing.
 
 ---
+## System Requirements
+
+- macOS
+- Node.js v20.19+ or v22+
+- Homebrew installed
+
+Check your Node version:
+
+```bash
+node -v
+
+---
+
+##Local development setup
+
+#Install Ollama
+
+- Install using homebrew:
+```bash
+brew install ollama
+
+- verify installation
+```bash
+ollama --version
+
+# Pull the required model
+
+- This project defaults to:
+```code
+llama3.1:8b
+
+- pull the model
+```bash
+ollama pull llama3.1:8b
+
+- verify:
+```bash
+ollama list
+
+#Start Ollama
+- Run:
+```bash
+ollama serve
+
+- You should see:
+```code
+Listening on 127.0.0.1:11434
+
+Leave this terminal window running
+
+#Start the local API Server
+Open a new terminal tab:
+```bash
+cd server
+npm install
+npm run dev
+
+Expected output:
+```code
+Server running on http://localhost:5176
+Using Ollama model: llama3.1:8b
+Ollama URL: http://127.0.0.1:11434
+
+# Start the frontend
+Open another terminal tab in the project window
+```bash
+npm install
+npm run dev
+
+Open the Vite local URL shown in terminal
+
+---
+## Architecture Overview
+Frontend (React)
+    ↓
+Local API Server (Express) – port 5176
+    ↓
+Ollama (Local LLM runtime) – port 11434
+
+---
+### Stage 1 – Source-Bound Structural Extraction
+## Purpose
+
+Stage 1 converts a book chapter into structured JSON without generating new ideas.
+
+It is designed to:
+
+- Prevent hallucination
+- Preserve author terminology
+- Require evidence-backed claims
+- Prepare structured input for Stage 2 assembly
+
+This stage performs structured editorial extraction — not generative writing.
+
+## Extraction Guarantees
+
+The extraction prompt enforces:
+
+- No new ideas beyond the source.
+- Every extracted claim must include evidence_quotes.
+- JSON-only output (no markdown, no commentary).
+- Verbatim phrasing preferred.
+- If unclear → omit rather than guess.
+---
 
 ## Output Schema
 
@@ -70,3 +174,24 @@ The Stage 1 prompt enforces:
     "tone_tags": ["string"]
   }
 }
+---
+
+###Quick smke test
+```bash
+curl -X POST http://localhost:5176/extract \
+  -H "Content-Type: application/json" \
+  -d '{"source":"Writing great prompts is a foundational skill in AI engineering.","author":"Sam Bhagwat"}'
+
+If JSON is returned -> Stage 1 is working correctly
+
+---
+## macOS Localhost Fix(Important)
+Some macOS setups resolve localhost to IPv6 first, which can cause:
+```code
+Extraction failed: fetch failed
+
+if this occurs, restart the server with:
+```bash
+OLLAMA_URL=http://127.0.0.1:11434 npm run dev
+
+This forces IPv4 and resolves the issue.
