@@ -64,7 +64,7 @@ class OllamaTimeoutError extends Error {
   stage: string;
 }
 
-async function callOllama(request: OllamaGenerateRequest, routeLabel: string): Promise<string> {
+async function callOllama(request: OllamaGenerateRequest, routeLabel: string, timeoutMs: number): Promise<string> {
   const controller = new AbortController();
   const startTime = Date.now();
   let timeoutId: NodeJS.Timeout | null = null;
@@ -75,7 +75,7 @@ async function callOllama(request: OllamaGenerateRequest, routeLabel: string): P
   try {
     timeoutId = setTimeout(() => {
       controller.abort();
-    }, 90000);
+    }, timeoutMs);
 
     const response = await fetch(`${OLLAMA_URL}/api/generate`, {
       method: 'POST',
@@ -389,7 +389,7 @@ app.post('/extract', async (req: Request, res: Response) => {
       ollamaRequest.format = 'json';
     }
 
-    const response = await callOllama(ollamaRequest, '/extract');
+    const response = await callOllama(ollamaRequest, '/extract', 90000);
 
     let outline;
 
@@ -457,7 +457,7 @@ app.post('/assemble', async (req: Request, res: Response) => {
       .replace('{SOURCE}', source)
       .replace('{OUTLINE}', JSON.stringify(outline, null, 2));
 
-    const numPredict = platform === 'substack' ? 900 : 650;
+    const numPredict = platform === 'linkedin' ? 260 : 420;
 
     const draft = await callOllama({
       model: OLLAMA_MODEL,
@@ -467,7 +467,7 @@ app.post('/assemble', async (req: Request, res: Response) => {
         temperature: 0.3,
         num_predict: numPredict,
       },
-    }, '/assemble');
+    }, '/assemble', 180000);
 
     res.json({ draft });
   } catch (error) {
