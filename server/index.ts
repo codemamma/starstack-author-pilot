@@ -285,16 +285,35 @@ If you cannot follow these rules, stop generation.
 STRICT RULES:
 1. Write as the author, not as someone summarizing the author
 2. No meta language: "this article," "generated," "optimized," "here's what makes this compelling"
-3. Expand bullet points into full paragraphs using the author's voice
-4. Quotes must appear as natural sentences within paragraphs - never list quotes separately
+3. Do NOT paraphrase quotes - include them exactly as written from outline.notable_quotes
+4. Quotes must be surrounded by quotation marks and appear as standalone sentences or within paragraphs
 
-LINKEDIN FORMAT:
+LINKEDIN FORMATTING REQUIREMENTS:
 - First line must be a hook sentence (compelling, direct)
 - No headings
-- Short paragraphs (1-2 sentences per paragraph)
+- Each paragraph must contain 1-2 sentences maximum
+- Insert a blank line between paragraphs (use \n\n for line breaks)
+- Do NOT produce a single block of text
 - Maximum 1 emoji total (optional)
 - Target length: 120-180 words
 - Closing question tied to thesis
+
+Example structure:
+Hook sentence.
+
+Supporting sentence.
+
+"Quoted sentence from source."
+
+Explanation sentence.
+
+Another supporting sentence.
+
+"Second quoted sentence."
+
+Closing thought.
+
+Grounded question?
 
 SOURCE MATERIAL:
 {SOURCE}
