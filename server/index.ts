@@ -138,8 +138,8 @@ QUOTES:
 - "..."
 - "..."
 
-Rules for BULLETS: Must be 3–6 lines, each line is: - point || "verbatim quote from source"
-Rules for QUOTES: Must be 3–6 verbatim quotes from the source
+Rules for BULLETS: Exactly 3 lines, each line is: - point || "verbatim quote from source"
+Rules for QUOTES: Exactly 3 verbatim quotes from the source
 
 Source material to analyze:
 {SOURCE}
@@ -359,7 +359,7 @@ app.post('/extract', async (req: Request, res: Response) => {
 
     if (TEXT_FAST_EXTRACT) {
       extractionPrompt = TEXT_FAST_EXTRACTION_PROMPT;
-      numPredict = 220;
+      numPredict = 160;
       useJsonFormat = false;
     } else if (FAST_EXTRACT) {
       extractionPrompt = FAST_EXTRACTION_PROMPT;
