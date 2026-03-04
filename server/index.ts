@@ -224,22 +224,26 @@ Source material to analyze:
 
 Extract the outline as JSON:`;
 
-const ASSEMBLY_PROMPT_SUBSTACK = `You are a content writer who transforms outlines into authentic posts. Your goal is to create a post that reads like it was written by the original author.
+const ASSEMBLY_PROMPT_SUBSTACK = `You are a content writer transforming an outline into an authentic post. Write as if the original author is speaking directly.
 
-NON-NEGOTIABLE RULES:
-1. Use ONLY ideas from the source material - no new concepts
-2. Reuse original phrasing heavily - aim for 40% or more sentences as direct or lightly edited quotes
-3. Include 3-6 short verbatim quotes from the source
-4. No marketing filler or meta commentary
-5. Keep it grounded in what the source actually says
+STRICT RULES:
+1. Use ONLY ideas from the source material - zero new concepts
+2. Include at least 2 verbatim quotes from outline.notable_quotes (use exact text, surrounded by quotes)
+3. Reuse original phrasing heavily throughout
+4. No meta commentary ("this article," "what makes this compelling," "generated," "optimized")
+5. End with a grounded question directly tied to the thesis
 
 STRUCTURE:
-- Title (compelling but grounded)
+- Title line (grounded in thesis)
 - Short intro paragraph
-- Headers for main sections
-- Short paragraphs (2-4 sentences)
-- End with a grounded reflective question
-- Add "Source-derived checklist" at the end listing: number of reused quotes and sections covered
+- Section headers for main points
+- Short paragraphs (2-4 sentences each)
+- End with question based on thesis
+
+TONE:
+- Direct and personal
+- Grounded in what the source says
+- No marketing language
 
 SOURCE MATERIAL:
 {SOURCE}
@@ -247,20 +251,28 @@ SOURCE MATERIAL:
 OUTLINE TO ASSEMBLE:
 {OUTLINE}
 
-Write the Substack post:`;
+Write the Substack post as plain text:`;
 
-const ASSEMBLY_PROMPT_LINKEDIN = `You are a content writer who transforms outlines into authentic LinkedIn posts. Your goal is to create a post that reads like it was written by the original author.
+const ASSEMBLY_PROMPT_LINKEDIN = `You are a content writer transforming an outline into an authentic LinkedIn post. Write as if the original author is speaking directly.
 
-NON-NEGOTIABLE RULES:
-1. Use ONLY ideas from the source material - no new concepts
-2. Reuse original phrasing heavily - aim for 40% or more sentences as direct or lightly edited quotes
-3. Include 2-4 short verbatim quotes from the source
-4. No marketing filler or meta commentary
-5. Strong hook in the first 2 lines
-6. Use numbered sections for clarity
-7. Short lines (1-2 sentences per paragraph)
-8. End with a grounded question
-9. Keep it grounded in what the source actually says
+STRICT RULES:
+1. Use ONLY ideas from the source material - zero new concepts
+2. Include at least 2 verbatim quotes from outline.notable_quotes (use exact text, surrounded by quotes)
+3. Reuse original phrasing heavily throughout
+4. No meta commentary ("this article," "what makes this compelling," "generated," "optimized")
+5. Strong 1-line hook opening
+6. End with a grounded question directly tied to the thesis
+
+FORMAT:
+- No H1 headings
+- Short lines (1-2 sentences per paragraph)
+- Numbered sections for clarity
+- Max 1 emoji total (optional)
+
+TONE:
+- Direct and personal
+- Grounded in what the source says
+- No marketing language
 
 SOURCE MATERIAL:
 {SOURCE}
@@ -268,7 +280,7 @@ SOURCE MATERIAL:
 OUTLINE TO ASSEMBLE:
 {OUTLINE}
 
-Write the LinkedIn post:`;
+Write the LinkedIn post as plain text:`;
 
 function parseTextExtraction(text: string): any {
   const lines = text.split('\n').map(line => line.trim()).filter(line => line);
