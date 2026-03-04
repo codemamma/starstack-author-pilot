@@ -53,6 +53,15 @@ interface OllamaGenerateResponse {
   done: boolean;
 }
 
+class OllamaTimeoutError extends Error {
+  constructor(stage: string) {
+    super(`Ollama timeout after 90 seconds`);
+    this.name = 'OllamaTimeoutError';
+    this.stage = stage;
+  }
+  stage: string;
+}
+
 async function callOllama(request: OllamaGenerateRequest, routeLabel: string): Promise<string> {
   const controller = new AbortController();
   const startTime = Date.now();
@@ -62,7 +71,9 @@ async function callOllama(request: OllamaGenerateRequest, routeLabel: string): P
   console.log(`[ollama] start ${routeLabel} model=${request.model} format=${format}`);
 
   try {
-    timeoutId = setTimeout(() => controller.abort(), 600000);
+    timeoutId = setTimeout(() => {
+      controller.abort();
+    }, 90000);
 
     const response = await fetch(`${OLLAMA_URL}/api/generate`, {
       method: 'POST',
@@ -86,8 +97,15 @@ async function callOllama(request: OllamaGenerateRequest, routeLabel: string): P
     return data.response;
   } catch (error) {
     const elapsed = Date.now() - startTime;
+
+    if (error instanceof Error && error.name === 'AbortError') {
+      const stage = routeLabel.replace('/', '');
+      console.error(`[ollama] error ${routeLabel} ms=${elapsed} Ollama timeout`);
+      throw new OllamaTimeoutError(stage);
+    }
+
     const message = error instanceof Error ? error.message : 'Unknown error';
-    console.error(`[ollama] error ${routeLabel} ms=${elapsed} message=${message}`);
+    console.error(`[ollama] error ${routeLabel} ms=${elapsed} ${message}`);
     throw error;
   } finally {
     if (timeoutId) {
@@ -224,7 +242,7 @@ app.post('/extract', async (req: Request, res: Response) => {
       format: 'json',
       options: {
         temperature: 0,
-        num_predict: 700,
+        num_predict: 450,
       },
     }, '/extract');
 
@@ -242,6 +260,14 @@ app.post('/extract', async (req: Request, res: Response) => {
     res.json({ outline });
   } catch (error) {
     console.error('Extract error:', error);
+
+    if (error instanceof OllamaTimeoutError) {
+      return res.status(504).json({
+        error: 'Ollama timeout',
+        stage: 'extract'
+      });
+    }
+
     res.status(500).json({
       error: 'Extraction failed',
       details: error instanceof Error ? error.message : 'Unknown error'
@@ -288,6 +314,14 @@ app.post('/assemble', async (req: Request, res: Response) => {
     res.json({ draft });
   } catch (error) {
     console.error('Assemble error:', error);
+
+    if (error instanceof OllamaTimeoutError) {
+      return res.status(504).json({
+        error: 'Ollama timeout',
+        stage: 'assemble'
+      });
+    }
+
     res.status(500).json({
       error: 'Assembly failed',
       details: error instanceof Error ? error.message : 'Unknown error'
@@ -295,8 +329,8 @@ app.post('/assemble', async (req: Request, res: Response) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+app.listen(PORT, '127.0.0.1', () => {
+  console.log(`Server running on http://127.0.0.1:${PORT}`);
   console.log(`Using Ollama model: ${OLLAMA_MODEL}`);
   console.log(`Ollama URL: ${OLLAMA_URL}`);
 });
