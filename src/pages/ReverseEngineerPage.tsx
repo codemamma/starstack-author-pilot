@@ -1,129 +1,123 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import InputPanel from '../components/InputPanel';
 import OutputPanel from '../components/OutputPanel';
 import './ReverseEngineerPage.css';
-import { extractOutline, assembleDraft, checkHealth, getApiBaseUrl, type HealthCheckResponse } from '../lib/pilotApi';
 
-interface RequestDebugInfo {
-  endpoint: string;
-  method: string;
-  url: string;
-  status?: number;
-  error?: string;
-  timestamp: string;
+import { extractOutline, assembleDraft, ExtractOutlineResponse } from '../lib/pilotApi';
+import { analyzeVoiceReuse } from '../lib/voiceReuse';
+
+const STORAGE_KEY = 'reverseEngineerData';
+
+interface StoredData {
+  chapterText: string;
+  authorName: string;
+  platform: string;
 }
 
 function ReverseEngineerPage() {
   const [chapterText, setChapterText] = useState('');
   const [authorName, setAuthorName] = useState('');
   const [platform, setPlatform] = useState('LinkedIn');
-  const [engagementGoal, setEngagementGoal] = useState('Thought leadership');
-  const [output, setOutput] = useState<any>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [outline, setOutline] = useState<ExtractOutlineResponse['outline'] | null>(null);
+  const [draft, setDraft] = useState<string | null>(null);
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [isAssembling, setIsAssembling] = useState(false);
+  const [extractError, setExtractError] = useState<string | null>(null);
+  const [assembleError, setAssembleError] = useState<string | null>(null);
+  const [extractElapsed, setExtractElapsed] = useState(0);
+  const [assembleElapsed, setAssembleElapsed] = useState(0);
 
-  const [showDiagnostics, setShowDiagnostics] = useState(false);
-  const [healthStatus, setHealthStatus] = useState<HealthCheckResponse | null>(null);
-  const [healthError, setHealthError] = useState<string | null>(null);
-  const [isCheckingHealth, setIsCheckingHealth] = useState(false);
-  const [requestHistory, setRequestHistory] = useState<RequestDebugInfo[]>([]);
-
-  const logRequest = (info: RequestDebugInfo) => {
-    setRequestHistory(prev => [info, ...prev.slice(0, 4)]);
-  };
-
-  const handleCheckHealth = async () => {
-    setIsCheckingHealth(true);
-    setHealthError(null);
-    setHealthStatus(null);
-
-    try {
-      const health = await checkHealth();
-      setHealthStatus(health);
-      logRequest({
-        endpoint: '/health',
-        method: 'GET',
-        url: `${getApiBaseUrl()}/health`,
-        status: 200,
-        timestamp: new Date().toISOString(),
-      });
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Health check failed';
-      setHealthError(errorMsg);
-      logRequest({
-        endpoint: '/health',
-        method: 'GET',
-        url: `${getApiBaseUrl()}/health`,
-        error: errorMsg,
-        timestamp: new Date().toISOString(),
-      });
-    } finally {
-      setIsCheckingHealth(false);
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      try {
+        const data: StoredData = JSON.parse(stored);
+        setChapterText(data.chapterText || '');
+        setAuthorName(data.authorName || '');
+        setPlatform(data.platform || 'LinkedIn');
+      } catch (e) {
+        console.error('Failed to parse stored data', e);
+      }
     }
-  };
+  }, []);
 
-  const handleReverseEngineer = async () => {
+  useEffect(() => {
+    const data: StoredData = {
+      chapterText,
+      authorName,
+      platform,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }, [chapterText, authorName, platform]);
+
+  const handleExtractOutline = async () => {
     if (!chapterText.trim()) {
       alert('Please enter chapter text');
       return;
     }
 
-    setIsProcessing(true);
-    setError(null);
-    setOutput(null);
+    setIsExtracting(true);
+    setExtractError(null);
+    setOutline(null);
+    setDraft(null);
+    setExtractElapsed(0);
+
+    const startTime = Date.now();
+    const interval = setInterval(() => {
+      setExtractElapsed(Math.floor((Date.now() - startTime) / 1000));
+    }, 100);
 
     try {
       const extractResponse = await extractOutline({
         source: chapterText,
         author: authorName || undefined,
       });
+      setOutline(extractResponse.outline);
+    } catch (err) {
+      setExtractError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      clearInterval(interval);
+      setExtractElapsed(Math.floor((Date.now() - startTime) / 1000));
+      setIsExtracting(false);
+    }
+  };
 
-      logRequest({
-        endpoint: '/extract',
-        method: 'POST',
-        url: `${getApiBaseUrl()}/extract`,
-        status: 200,
-        timestamp: new Date().toISOString(),
-      });
+  const handleGenerateDraft = async () => {
+    if (!outline) return;
 
-      const outline = extractResponse.outline;
+    setIsAssembling(true);
+    setAssembleError(null);
+    setDraft(null);
+    setAssembleElapsed(0);
 
+    const startTime = Date.now();
+    const interval = setInterval(() => {
+      setAssembleElapsed(Math.floor((Date.now() - startTime) / 1000));
+    }, 100);
+
+    try {
       const assembleResponse = await assembleDraft({
         platform: platform.toLowerCase() as "substack" | "linkedin",
         outline,
         source: chapterText,
       });
 
-      logRequest({
-        endpoint: '/assemble',
-        method: 'POST',
-        url: `${getApiBaseUrl()}/assemble`,
-        status: 200,
-        timestamp: new Date().toISOString(),
-      });
-
-      setOutput({
-        draft: assembleResponse.draft,
-        structure: JSON.stringify(outline, null, 2),
-        outline,
-      });
+      setDraft(assembleResponse.draft);
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'An error occurred';
-      setError(errorMsg);
-
-      const failedEndpoint = errorMsg.toLowerCase().includes('extract') ? '/extract' : '/assemble';
-      logRequest({
-        endpoint: failedEndpoint,
-        method: 'POST',
-        url: `${getApiBaseUrl()}${failedEndpoint}`,
-        error: errorMsg,
-        timestamp: new Date().toISOString(),
-      });
+      setAssembleError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
-      setIsProcessing(false);
+      clearInterval(interval);
+      setAssembleElapsed(Math.floor((Date.now() - startTime) / 1000));
+      setIsAssembling(false);
     }
   };
+
+  const voiceAnalysis = draft && outline ? analyzeVoiceReuse(
+    draft,
+    chapterText,
+    outline.notable_quotes || []
+  ) : null;
 
   return (
     <div className="reverse-engineer-page">
@@ -205,13 +199,22 @@ function ReverseEngineerPage() {
             setAuthorName={setAuthorName}
             platform={platform}
             setPlatform={setPlatform}
-            engagementGoal={engagementGoal}
-            setEngagementGoal={setEngagementGoal}
-            onReverseEngineer={handleReverseEngineer}
-            isProcessing={isProcessing}
+            onExtractOutline={handleExtractOutline}
+            onGenerateDraft={handleGenerateDraft}
+            isExtracting={isExtracting}
+            isAssembling={isAssembling}
+            hasOutline={!!outline}
+            extractElapsed={extractElapsed}
+            assembleElapsed={assembleElapsed}
           />
 
-          <OutputPanel output={output} error={error} />
+          <OutputPanel
+            outline={outline}
+            draft={draft}
+            extractError={extractError}
+            assembleError={assembleError}
+            voiceAnalysis={voiceAnalysis}
+          />
         </div>
       </div>
     </div>

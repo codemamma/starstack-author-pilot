@@ -3,8 +3,6 @@
   border-radius: 12px;
   padding: 2rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  position: sticky;
-  top: 120px;
 }
 
 .output-panel h2 {
@@ -34,108 +32,150 @@
   max-width: 300px;
 }
 
-.tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid #e9ecef;
+.collapsible-section {
+  margin-bottom: 1rem;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-.tab {
-  background: none;
+.collapsible-header {
+  width: 100%;
+  background: #f8f9fa;
   border: none;
-  padding: 0.75rem 1rem;
-  font-size: 0.938rem;
-  font-weight: 500;
-  color: #6c757d;
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: color 0.2s ease, border-color 0.2s ease;
-  position: relative;
-  bottom: -1px;
+  font-size: 0.938rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  transition: background 0.2s ease;
 }
 
-.tab:hover {
-  color: #495057;
+.collapsible-header:hover {
+  background: #e9ecef;
 }
 
-.tab.active {
-  color: #0066cc;
-  border-bottom-color: #0066cc;
+.chevron {
+  transition: transform 0.2s ease;
+  color: #6c757d;
+  font-size: 0.75rem;
 }
 
-.tab-content {
-  min-height: 300px;
+.chevron.expanded {
+  transform: rotate(-180deg);
 }
 
-.content-wrapper {
-  line-height: 1.8;
-  color: #212529;
-  white-space: pre-wrap;
+.collapsible-content {
+  padding: 1rem 1.25rem;
+  background: white;
 }
 
 .json-output {
   background: #f8f9fa;
-  padding: 1.5rem;
-  border-radius: 8px;
+  padding: 1rem;
+  border-radius: 6px;
   overflow-x: auto;
   font-family: 'Monaco', 'Courier New', monospace;
-  font-size: 0.875rem;
-  line-height: 1.6;
+  font-size: 0.813rem;
+  line-height: 1.5;
   color: #212529;
+  margin: 0;
 }
 
-.voice-content {
-  padding: 1rem 0;
-}
-
-.voice-metric {
-  background: linear-gradient(135deg, #0066cc 0%, #0052a3 100%);
-  color: white;
-  padding: 2rem;
-  border-radius: 12px;
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.metric-label {
-  font-size: 0.875rem;
-  font-weight: 500;
-  opacity: 0.9;
-  margin-bottom: 0.5rem;
-}
-
-.metric-value {
-  font-size: 3rem;
-  font-weight: 700;
-}
-
-.reused-phrases-section h3 {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: #1a1a1a;
-}
-
-.phrases-list {
+.quotes-list {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
 }
 
-.phrase-item {
-  background: #f8f9fa;
-  padding: 0.875rem 1rem;
-  border-radius: 8px;
-  font-size: 0.938rem;
-  color: #495057;
+.quote-item {
   display: flex;
-  align-items: center;
   gap: 0.75rem;
+  align-items: flex-start;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  border-radius: 6px;
 }
 
-.phrase-icon {
-  color: #0066cc;
-  font-weight: 700;
-  font-size: 1.25rem;
+.quote-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: #0066cc;
+  color: white;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.quote-text {
+  flex: 1;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: #495057;
+}
+
+.draft-section {
+  margin-top: 1rem;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.draft-header {
+  background: #f8f9fa;
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.draft-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.draft-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.word-count {
+  font-size: 0.875rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+.copy-button {
+  background: #0066cc;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.copy-button:hover {
+  background: #0052a3;
+}
+
+.draft-content {
+  padding: 1.5rem 1.25rem;
+  line-height: 1.8;
+  color: #212529;
+  white-space: pre-wrap;
+  font-size: 0.938rem;
 }
