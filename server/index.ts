@@ -234,11 +234,12 @@ STRICT RULES:
 5. No meta language: "this article," "generated," "optimized," "here's what makes this compelling"
 6. End with a grounded question derived from the thesis
 
-STRUCTURE:
-- Title line (grounded in thesis)
+SUBSTACK FORMAT:
+- Title line at the top (grounded in thesis)
 - Short intro paragraph that sets up the thesis
-- Section headers for main points
-- Short paragraphs (2-4 sentences) expanding each bullet point
+- You may include section headers for main points
+- Paragraphs can be longer (3-5 sentences)
+- Target length: 300-450 words
 - Closing question tied to thesis
 
 QUOTE INTEGRATION:
@@ -262,14 +263,15 @@ STRICT RULES:
 3. Expand bullet points into full paragraphs using the author's voice
 4. Write as the author, not as someone summarizing the author
 5. No meta language: "this article," "generated," "optimized," "here's what makes this compelling"
-6. Strong 1-line hook opening
-7. End with a grounded question derived from the thesis
+6. End with a grounded question derived from the thesis
 
-FORMAT:
-- No H1 headings
-- Short lines (1-2 sentences per paragraph)
-- Numbered sections for clarity
-- Max 1 emoji total (optional)
+LINKEDIN FORMAT:
+- First line must be a hook sentence (compelling, direct)
+- No headings
+- Short paragraphs (1-2 sentences per paragraph)
+- Maximum 1 emoji total (optional)
+- Target length: 120-180 words
+- Closing question tied to thesis
 
 QUOTE INTEGRATION:
 - Quotes must appear as natural sentences within paragraphs
