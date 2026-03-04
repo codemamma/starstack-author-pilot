@@ -56,24 +56,21 @@ interface OllamaGenerateResponse {
 }
 
 class OllamaTimeoutError extends Error {
-  constructor(stage: string, timeoutMs: number) {
-    super(`Ollama timeout after ${timeoutMs / 1000} seconds`);
+  constructor(stage: string) {
+    super(`Ollama timeout after 90 seconds`);
     this.name = 'OllamaTimeoutError';
     this.stage = stage;
   }
   stage: string;
 }
 
-async function callOllama(request: OllamaGenerateRequest, routeLabel: string, timeoutMs: number, platform?: string): Promise<string> {
+async function callOllama(request: OllamaGenerateRequest, routeLabel: string, timeoutMs: number): Promise<string> {
   const controller = new AbortController();
   const startTime = Date.now();
   let timeoutId: NodeJS.Timeout | null = null;
 
   const format = request.format || 'text';
-  const logPrefix = platform
-    ? `[ollama] start ${routeLabel} platform=${platform} timeout=${timeoutMs}`
-    : `[ollama] start ${routeLabel} model=${request.model} format=${format}`;
-  console.log(logPrefix);
+  console.log(`[ollama] start ${routeLabel} model=${request.model} format=${format}`);
 
   try {
     timeoutId = setTimeout(() => {
@@ -106,7 +103,7 @@ async function callOllama(request: OllamaGenerateRequest, routeLabel: string, ti
     if (error instanceof Error && error.name === 'AbortError') {
       const stage = routeLabel.replace('/', '');
       console.error(`[ollama] error ${routeLabel} ms=${elapsed} Ollama timeout`);
-      throw new OllamaTimeoutError(stage, timeoutMs);
+      throw new OllamaTimeoutError(stage);
     }
 
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -534,7 +531,6 @@ app.post('/assemble', async (req: Request, res: Response) => {
       });
     }
 
-    const timeoutMs = platform === 'substack' ? 180000 : 90000;
     const promptTemplate = platform === 'substack'
       ? ASSEMBLY_PROMPT_SUBSTACK
       : ASSEMBLY_PROMPT_LINKEDIN;
@@ -553,15 +549,7 @@ app.post('/assemble', async (req: Request, res: Response) => {
         temperature: 0.3,
         num_predict: numPredict,
       },
-    }, '/assemble', timeoutMs, platform);
-
-    if (!draft || draft.trim().length === 0) {
-      console.error('Empty draft response from Ollama');
-      return res.status(500).json({
-        error: 'Draft generation failed',
-        stage: 'assemble'
-      });
-    }
+    }, '/assemble', 180000);
 
     res.json({ draft });
   } catch (error) {

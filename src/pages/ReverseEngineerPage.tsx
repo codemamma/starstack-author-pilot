@@ -27,6 +27,7 @@ function ReverseEngineerPage() {
   const [assembleError, setAssembleError] = useState<string | null>(null);
   const [extractElapsed, setExtractElapsed] = useState(0);
   const [assembleElapsed, setAssembleElapsed] = useState(0);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -129,6 +130,68 @@ function ReverseEngineerPage() {
       </header>
 
       <div className="page-content">
+        <div className="diagnostics-section">
+          <button
+            className="diagnostics-toggle"
+            onClick={() => setShowDiagnostics(!showDiagnostics)}
+          >
+            {showDiagnostics ? '▼' : '▶'} Diagnostics
+          </button>
+
+          {showDiagnostics && (
+            <div className="diagnostics-panel">
+              <div className="diagnostic-item">
+                <strong>API Base URL:</strong> {getApiBaseUrl()}
+              </div>
+
+              <div className="diagnostic-item">
+                <button
+                  onClick={handleCheckHealth}
+                  disabled={isCheckingHealth}
+                  className="check-server-btn"
+                >
+                  {isCheckingHealth ? 'Checking...' : 'Check Server'}
+                </button>
+
+                {healthStatus && (
+                  <div className="health-response">
+                    <pre>{JSON.stringify(healthStatus, null, 2)}</pre>
+                  </div>
+                )}
+
+                {healthError && (
+                  <div className="health-error">
+                    {healthError}
+                  </div>
+                )}
+              </div>
+
+              <div className="diagnostic-item">
+                <strong>Request History:</strong>
+                {requestHistory.length === 0 ? (
+                  <div className="no-requests">No requests yet</div>
+                ) : (
+                  <div className="request-history">
+                    {requestHistory.map((req, idx) => (
+                      <div key={idx} className="request-item">
+                        <div className="request-line">
+                          <span className="request-method">{req.method}</span>
+                          <span className="request-endpoint">{req.endpoint}</span>
+                          {req.status && <span className="request-status success">✓ {req.status}</span>}
+                          {req.error && <span className="request-status error">✗ Error</span>}
+                        </div>
+                        <div className="request-url">{req.url}</div>
+                        {req.error && <div className="request-error">{req.error}</div>}
+                        <div className="request-time">{new Date(req.timestamp).toLocaleTimeString()}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
         <div className="two-column-layout">
           <InputPanel
             chapterText={chapterText}
