@@ -224,26 +224,27 @@ Source material to analyze:
 
 Extract the outline as JSON:`;
 
-const ASSEMBLY_PROMPT_SUBSTACK = `You are a content writer transforming an outline into an authentic post. Write as if the original author is speaking directly.
+const ASSEMBLY_PROMPT_SUBSTACK = `You are writing a post in the author's natural voice. Expand the ideas from the outline into a full post that sounds like the author speaking directly.
 
 STRICT RULES:
-1. Use ONLY ideas from the source material - zero new concepts
-2. Include at least 2 verbatim quotes from outline.notable_quotes (use exact text, surrounded by quotes)
-3. Reuse original phrasing heavily throughout
-4. No meta commentary ("this article," "what makes this compelling," "generated," "optimized")
-5. End with a grounded question directly tied to the thesis
+1. Use ONLY ideas present in the source or outline - zero new concepts
+2. Include at least 2 verbatim quotes from outline.notable_quotes woven naturally into sentences (not as a list)
+3. Expand bullet points into full paragraphs using the author's voice
+4. Write as the author, not as someone summarizing the author
+5. No meta language: "this article," "generated," "optimized," "here's what makes this compelling"
+6. End with a grounded question derived from the thesis
 
 STRUCTURE:
 - Title line (grounded in thesis)
-- Short intro paragraph
+- Short intro paragraph that sets up the thesis
 - Section headers for main points
-- Short paragraphs (2-4 sentences each)
-- End with question based on thesis
+- Short paragraphs (2-4 sentences) expanding each bullet point
+- Closing question tied to thesis
 
-TONE:
-- Direct and personal
-- Grounded in what the source says
-- No marketing language
+QUOTE INTEGRATION:
+- Quotes must appear as natural sentences within paragraphs
+- Never list quotes separately
+- Use quotes to support or illustrate the points being made
 
 SOURCE MATERIAL:
 {SOURCE}
@@ -253,15 +254,16 @@ OUTLINE TO ASSEMBLE:
 
 Write the Substack post as plain text:`;
 
-const ASSEMBLY_PROMPT_LINKEDIN = `You are a content writer transforming an outline into an authentic LinkedIn post. Write as if the original author is speaking directly.
+const ASSEMBLY_PROMPT_LINKEDIN = `You are writing a LinkedIn post in the author's natural voice. Expand the ideas from the outline into a full post that sounds like the author speaking directly.
 
 STRICT RULES:
-1. Use ONLY ideas from the source material - zero new concepts
-2. Include at least 2 verbatim quotes from outline.notable_quotes (use exact text, surrounded by quotes)
-3. Reuse original phrasing heavily throughout
-4. No meta commentary ("this article," "what makes this compelling," "generated," "optimized")
-5. Strong 1-line hook opening
-6. End with a grounded question directly tied to the thesis
+1. Use ONLY ideas present in the source or outline - zero new concepts
+2. Include at least 2 verbatim quotes from outline.notable_quotes woven naturally into sentences (not as a list)
+3. Expand bullet points into full paragraphs using the author's voice
+4. Write as the author, not as someone summarizing the author
+5. No meta language: "this article," "generated," "optimized," "here's what makes this compelling"
+6. Strong 1-line hook opening
+7. End with a grounded question derived from the thesis
 
 FORMAT:
 - No H1 headings
@@ -269,10 +271,10 @@ FORMAT:
 - Numbered sections for clarity
 - Max 1 emoji total (optional)
 
-TONE:
-- Direct and personal
-- Grounded in what the source says
-- No marketing language
+QUOTE INTEGRATION:
+- Quotes must appear as natural sentences within paragraphs
+- Never list quotes separately
+- Use quotes to support or illustrate the points being made
 
 SOURCE MATERIAL:
 {SOURCE}
