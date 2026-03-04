@@ -271,7 +271,7 @@ Constraints:
 - Do NOT create long teaching explanations
 - Avoid subsection headings like "Zero-Shot Prompting"
 - Keep paragraphs 2-3 sentences maximum
-- Target length: 300-350 words
+- Target length: 120-180 words
 - If output exceeds the limit, stop generation early
 
 ENDING RULE:
@@ -539,7 +539,7 @@ app.post('/assemble', async (req: Request, res: Response) => {
       .replace('{SOURCE}', source)
       .replace('{OUTLINE}', JSON.stringify(outline, null, 2));
 
-    const numPredict = platform === 'linkedin' ? 260 : 420;
+    const numPredict = 260;
 
     const draft = await callOllama({
       model: OLLAMA_MODEL,

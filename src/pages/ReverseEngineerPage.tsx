@@ -4,7 +4,7 @@ import InputPanel from '../components/InputPanel';
 import OutputPanel from '../components/OutputPanel';
 import './ReverseEngineerPage.css';
 
-import { extractOutline, assembleDraft, ExtractOutlineResponse } from '../lib/pilotApi';
+import { extractOutline, assembleDraft, ExtractOutlineResponse, getApiBaseUrl, checkHealth, HealthCheckResponse } from '../lib/pilotApi';
 import { analyzeVoiceReuse } from '../lib/voiceReuse';
 
 const STORAGE_KEY = 'reverseEngineerData';
@@ -13,6 +13,15 @@ interface StoredData {
   chapterText: string;
   authorName: string;
   platform: string;
+}
+
+interface RequestHistoryItem {
+  method: string;
+  endpoint: string;
+  url: string;
+  status?: number;
+  error?: string;
+  timestamp: number;
 }
 
 function ReverseEngineerPage() {
@@ -28,6 +37,10 @@ function ReverseEngineerPage() {
   const [extractElapsed, setExtractElapsed] = useState(0);
   const [assembleElapsed, setAssembleElapsed] = useState(0);
   const [showDiagnostics, setShowDiagnostics] = useState(false);
+  const [isCheckingHealth, setIsCheckingHealth] = useState(false);
+  const [healthStatus, setHealthStatus] = useState<HealthCheckResponse | null>(null);
+  const [healthError, setHealthError] = useState<string | null>(null);
+  const [requestHistory] = useState<RequestHistoryItem[]>([]);
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -51,6 +64,21 @@ function ReverseEngineerPage() {
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   }, [chapterText, authorName, platform]);
+
+  const handleCheckHealth = async () => {
+    setIsCheckingHealth(true);
+    setHealthStatus(null);
+    setHealthError(null);
+
+    try {
+      const status = await checkHealth();
+      setHealthStatus(status);
+    } catch (err) {
+      setHealthError(err instanceof Error ? err.message : 'Health check failed');
+    } finally {
+      setIsCheckingHealth(false);
+    }
+  };
 
   const handleExtractOutline = async () => {
     if (!chapterText.trim()) {
