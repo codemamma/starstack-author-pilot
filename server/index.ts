@@ -9,6 +9,7 @@ const app = express();
 const PORT = process.env.PORT || 5176;
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3.1:8b';
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
+const FAST_EXTRACT = process.env.FAST_EXTRACT !== 'false';
 
 const dispatcher = new Agent({
   headersTimeout: 600000,
@@ -114,7 +115,39 @@ async function callOllama(request: OllamaGenerateRequest, routeLabel: string): P
   }
 }
 
-const EXTRACTION_PROMPT = `You are an expert content analyzer. Your task is to extract ONLY what is explicitly stated in the provided source material.
+const FAST_EXTRACTION_PROMPT = `You are an expert content analyzer. Your task is to extract ONLY what is explicitly stated in the provided source material.
+
+STRICT RULES:
+- Extract ONLY information that appears in the source
+- Do NOT add your own ideas, interpretations, or knowledge
+- Every bullet point MUST include an evidence_quote from the source
+- Return ONLY valid JSON, no explanatory text
+
+Required JSON schema:
+{
+  "title": "string",
+  "author": "string or null",
+  "thesis": {
+    "statement": "string",
+    "evidence_quotes": ["string (1-2 quotes)"]
+  },
+  "bullets": [
+    {
+      "point": "string",
+      "evidence_quote": "string"
+    }
+  ],
+  "notable_quotes": ["string (3-6 verbatim lines from source)"]
+}
+
+Source material to analyze:
+{SOURCE}
+
+{AUTHOR_INSTRUCTION}
+
+Extract 3-6 bullet points with evidence. Return JSON:`;
+
+const FULL_EXTRACTION_PROMPT = `You are an expert content analyzer. Your task is to extract ONLY what is explicitly stated in the provided source material.
 
 STRICT RULES:
 - Extract ONLY information that appears in the source
@@ -231,7 +264,10 @@ app.post('/extract', async (req: Request, res: Response) => {
       ? `Author attribution: ${author}`
       : 'Author: determine from source or set to null';
 
-    const prompt = EXTRACTION_PROMPT
+    const extractionPrompt = FAST_EXTRACT ? FAST_EXTRACTION_PROMPT : FULL_EXTRACTION_PROMPT;
+    const numPredict = FAST_EXTRACT ? 300 : 450;
+
+    const prompt = extractionPrompt
       .replace('{SOURCE}', source)
       .replace('{AUTHOR_INSTRUCTION}', authorInstruction);
 
@@ -242,7 +278,7 @@ app.post('/extract', async (req: Request, res: Response) => {
       format: 'json',
       options: {
         temperature: 0,
-        num_predict: 450,
+        num_predict: numPredict,
       },
     }, '/extract');
 
@@ -333,4 +369,5 @@ app.listen(PORT, '127.0.0.1', () => {
   console.log(`Server running on http://127.0.0.1:${PORT}`);
   console.log(`Using Ollama model: ${OLLAMA_MODEL}`);
   console.log(`Ollama URL: ${OLLAMA_URL}`);
+  console.log(`Fast extraction mode: ${FAST_EXTRACT ? 'enabled' : 'disabled'}`);
 });
