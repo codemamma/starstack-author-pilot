@@ -1,4 +1,4 @@
-const PILOT_API_BASE = import.meta.env.VITE_PILOT_API_BASE || "http://localhost:5176";
+const PILOT_API_BASE = import.meta.env.VITE_PILOT_API_BASE || "http://127.0.0.1:5176";
 
 export function getApiBaseUrl(): string {
   return PILOT_API_BASE;

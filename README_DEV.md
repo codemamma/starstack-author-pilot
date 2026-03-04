@@ -18,14 +18,14 @@ ollama pull llama3.1:8b
 cd server && npm i && npm run dev
 ```
 
-The server will start on `http://localhost:5176` (configurable via `PORT` environment variable in `server/.env`).
+The server will start on `http://127.0.0.1:5176` (configurable via `PORT` environment variable in `server/.env`).
 
 ### Configuration
 
 Edit `server/.env` to customize:
 - `PORT`: Server port (default: 5176)
 - `OLLAMA_MODEL`: Ollama model to use (default: llama3.1:8b)
-- `OLLAMA_URL`: Ollama instance URL (default: http://localhost:11434)
+- `OLLAMA_URL`: Ollama instance URL (default: http://127.0.0.1:11434)
 
 ### API Endpoints
 
