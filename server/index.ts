@@ -43,6 +43,7 @@ interface OllamaGenerateRequest {
   prompt: string;
   stream: boolean;
   format?: string;
+  keep_alive?: string;
   options?: {
     temperature?: number;
     num_predict?: number;
@@ -56,8 +57,8 @@ interface OllamaGenerateResponse {
 }
 
 class OllamaTimeoutError extends Error {
-  constructor(stage: string) {
-    super(`Ollama timeout after 90 seconds`);
+  constructor(stage: string, timeoutMs: number) {
+    super(`Ollama timeout after ${timeoutMs}ms`);
     this.name = 'OllamaTimeoutError';
     this.stage = stage;
   }
@@ -70,7 +71,8 @@ async function callOllama(request: OllamaGenerateRequest, routeLabel: string, ti
   let timeoutId: NodeJS.Timeout | null = null;
 
   const format = request.format || 'text';
-  console.log(`[ollama] start ${routeLabel} model=${request.model} format=${format}`);
+  const stage = routeLabel.replace('/', '');
+  console.log(`[ollama] start stage=${stage} timeoutMs=${timeoutMs} model=${request.model} format=${format}`);
 
   try {
     timeoutId = setTimeout(() => {
@@ -103,7 +105,7 @@ async function callOllama(request: OllamaGenerateRequest, routeLabel: string, ti
     if (error instanceof Error && error.name === 'AbortError') {
       const stage = routeLabel.replace('/', '');
       console.error(`[ollama] error ${routeLabel} ms=${elapsed} Ollama timeout`);
-      throw new OllamaTimeoutError(stage);
+      throw new OllamaTimeoutError(stage, timeoutMs);
     }
 
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -227,9 +229,10 @@ Extract the outline as JSON:`;
 const ASSEMBLY_PROMPT_SUBSTACK = `You are writing a Substack article in the author's natural voice. Expand the ideas from the outline into a full article that sounds like the author speaking directly.
 
 GROUNDING RULES (STRICT):
-Use ONLY information present in:
-- source
-- outline.bullets
+Use ONLY information from the outline:
+- outline.title
+- outline.thesis.statement
+- outline.bullets (each has point and evidence_quote)
 - outline.notable_quotes
 
 Do NOT introduce new teaching examples such as:
@@ -262,9 +265,9 @@ STRICT RULES:
 
 SUBSTACK STRUCTURE REQUIREMENTS:
 The article must follow this structure:
-1. Title
-2. Short introduction paragraph
-3. 2-3 short body paragraphs
+1. Title (use outline.title)
+2. Short introduction paragraph (based on outline.thesis)
+3. 2-3 short body paragraphs (based on outline.bullets)
 4. Final paragraph with a grounded question
 
 Constraints:
@@ -289,9 +292,6 @@ Do NOT include:
 - instructions
 - markdown headings beyond the title
 
-SOURCE MATERIAL:
-{SOURCE}
-
 OUTLINE TO ASSEMBLE:
 {OUTLINE}
 
@@ -300,9 +300,10 @@ Write the Substack article as plain text:`;
 const ASSEMBLY_PROMPT_LINKEDIN = `You are writing a LinkedIn post in the author's natural voice. Expand the ideas from the outline into a full post that sounds like the author speaking directly.
 
 GROUNDING RULES (VERY IMPORTANT):
-Use ONLY ideas present in:
-- source
-- outline.bullets
+Use ONLY information from the outline:
+- outline.title
+- outline.thesis.statement
+- outline.bullets (each has point and evidence_quote)
 - outline.notable_quotes
 
 Do not introduce new explanations or analogies.
@@ -343,9 +344,6 @@ LINKEDIN FORMATTING REQUIREMENTS:
 OUTPUT REQUIREMENT:
 Return only the final LinkedIn post text.
 Do NOT include explanations, labels, template instructions, or formatting markers.
-
-SOURCE MATERIAL:
-{SOURCE}
 
 OUTLINE TO ASSEMBLE:
 {OUTLINE}
@@ -461,6 +459,7 @@ app.post('/extract', async (req: Request, res: Response) => {
       model: OLLAMA_MODEL,
       prompt,
       stream: false,
+      keep_alive: "10m",
       options: {
         temperature: 0,
         num_predict: numPredict,
@@ -471,7 +470,8 @@ app.post('/extract', async (req: Request, res: Response) => {
       ollamaRequest.format = 'json';
     }
 
-    const response = await callOllama(ollamaRequest, '/extract', 90000);
+    const timeoutMs = source.length > 2000 ? 120000 : 90000;
+    const response = await callOllama(ollamaRequest, '/extract', timeoutMs);
 
     let outline;
 
@@ -525,31 +525,33 @@ app.post('/assemble', async (req: Request, res: Response) => {
       });
     }
 
-    if (platform !== 'substack' && platform !== 'linkedin') {
+    const platformNorm = String(platform || "").toLowerCase();
+
+    if (platformNorm !== 'substack' && platformNorm !== 'linkedin') {
       return res.status(400).json({
         error: 'Invalid platform. Must be "substack" or "linkedin"'
       });
     }
 
-    const promptTemplate = platform === 'substack'
+    const promptTemplate = platformNorm === 'substack'
       ? ASSEMBLY_PROMPT_SUBSTACK
       : ASSEMBLY_PROMPT_LINKEDIN;
 
-    const prompt = promptTemplate
-      .replace('{SOURCE}', source)
-      .replace('{OUTLINE}', JSON.stringify(outline, null, 2));
+    const prompt = promptTemplate.replace('{OUTLINE}', JSON.stringify(outline, null, 2));
 
     const numPredict = 260;
+    const timeoutMs = platformNorm === 'substack' ? 180000 : 90000;
 
     const draft = await callOllama({
       model: OLLAMA_MODEL,
       prompt,
       stream: false,
+      keep_alive: "10m",
       options: {
         temperature: 0.3,
         num_predict: numPredict,
       },
-    }, '/assemble', 180000);
+    }, '/assemble', timeoutMs);
 
     res.json({ draft });
   } catch (error) {
