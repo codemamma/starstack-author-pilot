@@ -226,26 +226,35 @@ Extract the outline as JSON:`;
 
 const ASSEMBLY_PROMPT_SUBSTACK = `You are writing a post in the author's natural voice. Expand the ideas from the outline into a full post that sounds like the author speaking directly.
 
-STRICT RULES:
-1. Use ONLY ideas present in the source or outline - zero new concepts
-2. Include at least 2 verbatim quotes from outline.notable_quotes woven naturally into sentences (not as a list)
-3. Expand bullet points into full paragraphs using the author's voice
-4. Write as the author, not as someone summarizing the author
-5. No meta language: "this article," "generated," "optimized," "here's what makes this compelling"
-6. End with a grounded question derived from the thesis
+GROUNDING RULES (VERY IMPORTANT):
+Use ONLY ideas present in:
+- source
+- outline.bullets
+- outline.notable_quotes
 
-SUBSTACK FORMAT:
-- Title line at the top (grounded in thesis)
-- Short intro paragraph that sets up the thesis
-- You may include section headers for main points
+Do not introduce new explanations or analogies.
+
+You MUST include at least two quotes from outline.notable_quotes.
+Quotes must appear exactly as written and must be surrounded by quotation marks.
+
+Example:
+"More examples provide more guidance but take more time."
+
+If you cannot follow these rules, stop generation.
+
+STRICT RULES:
+1. Write as the author, not as someone summarizing the author
+2. No meta language: "this article," "generated," "optimized," "here's what makes this compelling"
+3. Expand bullet points into full paragraphs using the author's voice
+4. Quotes must appear as natural sentences within paragraphs - never list quotes separately
+
+SUBSTACK FORMATTING:
+- Start with the title
+- Write 3-5 short sections
+- Each section should use information directly from the outline
 - Paragraphs can be longer (3-5 sentences)
 - Target length: 300-450 words
-- Closing question tied to thesis
-
-QUOTE INTEGRATION:
-- Quotes must appear as natural sentences within paragraphs
-- Never list quotes separately
-- Use quotes to support or illustrate the points being made
+- End the article with a question based on the thesis
 
 SOURCE MATERIAL:
 {SOURCE}
@@ -257,13 +266,27 @@ Write the Substack post as plain text:`;
 
 const ASSEMBLY_PROMPT_LINKEDIN = `You are writing a LinkedIn post in the author's natural voice. Expand the ideas from the outline into a full post that sounds like the author speaking directly.
 
+GROUNDING RULES (VERY IMPORTANT):
+Use ONLY ideas present in:
+- source
+- outline.bullets
+- outline.notable_quotes
+
+Do not introduce new explanations or analogies.
+
+You MUST include at least two quotes from outline.notable_quotes.
+Quotes must appear exactly as written and must be surrounded by quotation marks.
+
+Example:
+"More examples provide more guidance but take more time."
+
+If you cannot follow these rules, stop generation.
+
 STRICT RULES:
-1. Use ONLY ideas present in the source or outline - zero new concepts
-2. Include at least 2 verbatim quotes from outline.notable_quotes woven naturally into sentences (not as a list)
+1. Write as the author, not as someone summarizing the author
+2. No meta language: "this article," "generated," "optimized," "here's what makes this compelling"
 3. Expand bullet points into full paragraphs using the author's voice
-4. Write as the author, not as someone summarizing the author
-5. No meta language: "this article," "generated," "optimized," "here's what makes this compelling"
-6. End with a grounded question derived from the thesis
+4. Quotes must appear as natural sentences within paragraphs - never list quotes separately
 
 LINKEDIN FORMAT:
 - First line must be a hook sentence (compelling, direct)
@@ -272,11 +295,6 @@ LINKEDIN FORMAT:
 - Maximum 1 emoji total (optional)
 - Target length: 120-180 words
 - Closing question tied to thesis
-
-QUOTE INTEGRATION:
-- Quotes must appear as natural sentences within paragraphs
-- Never list quotes separately
-- Use quotes to support or illustrate the points being made
 
 SOURCE MATERIAL:
 {SOURCE}
