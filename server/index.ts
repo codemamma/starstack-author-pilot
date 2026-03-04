@@ -254,6 +254,13 @@ Example:
 
 Do NOT generate placeholder quotes.
 
+REPETITION RULE (CRITICAL):
+Avoid repeating the same sentence more than once.
+
+If a sentence from outline.bullets or outline.notable_quotes has already appeared in the article, do not repeat it.
+
+Quotes from outline.notable_quotes must appear exactly as written and must be surrounded by quotation marks.
+
 STRICT RULES:
 1. Write as the author, not as someone summarizing the author
 2. No meta language: "this article," "generated," "optimized," "here's what makes this compelling"
