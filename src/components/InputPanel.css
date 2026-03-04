@@ -59,27 +59,90 @@
   background: white;
 }
 
-.primary-button {
+.platform-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.platform-button {
+  padding: 0.75rem 1rem;
+  background: white;
+  color: #4a5568;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.platform-button:hover {
+  border-color: #0066cc;
+  color: #0066cc;
+}
+
+.platform-button.active {
+  background: #0066cc;
+  color: white;
+  border-color: #0066cc;
+}
+
+.workflow-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.step-button {
   width: 100%;
-  padding: 0.875rem;
+  padding: 0.875rem 1.5rem;
   background: #0066cc;
   color: white;
   border: none;
   border-radius: 8px;
-  font-weight: 600;
   font-size: 1rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease;
-  margin-bottom: 0.75rem;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.primary-button:hover:not(:disabled) {
+.step-button:hover:not(:disabled) {
   background: #0052a3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
 }
 
-.primary-button:disabled {
-  opacity: 0.6;
+.step-button:disabled {
+  background: #cbd5e0;
   cursor: not-allowed;
+  transform: none;
+  opacity: 0.6;
+}
+
+.button-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .privacy-note {
@@ -87,4 +150,5 @@
   font-size: 0.813rem;
   color: #6c757d;
   margin: 0;
+  margin-top: 1rem;
 }

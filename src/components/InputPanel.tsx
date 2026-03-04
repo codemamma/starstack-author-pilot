@@ -7,10 +7,13 @@ interface InputPanelProps {
   setAuthorName: (value: string) => void;
   platform: string;
   setPlatform: (value: string) => void;
-  engagementGoal: string;
-  setEngagementGoal: (value: string) => void;
-  onReverseEngineer: () => void;
-  isProcessing: boolean;
+  onExtractOutline: () => void;
+  onGenerateDraft: () => void;
+  isExtracting: boolean;
+  isAssembling: boolean;
+  hasOutline: boolean;
+  extractElapsed: number;
+  assembleElapsed: number;
 }
 
 function InputPanel({
@@ -20,10 +23,13 @@ function InputPanel({
   setAuthorName,
   platform,
   setPlatform,
-  engagementGoal,
-  setEngagementGoal,
-  onReverseEngineer,
-  isProcessing,
+  onExtractOutline,
+  onGenerateDraft,
+  isExtracting,
+  isAssembling,
+  hasOutline,
+  extractElapsed,
+  assembleElapsed,
 }: InputPanelProps) {
   return (
     <div className="input-panel">
@@ -57,39 +63,55 @@ function InputPanel({
 
       <div className="form-group">
         <label htmlFor="platform">Platform</label>
-        <select
-          id="platform"
-          className="form-select"
-          value={platform}
-          onChange={(e) => setPlatform(e.target.value)}
-        >
-          <option value="LinkedIn">LinkedIn</option>
-          <option value="Substack">Substack</option>
-        </select>
+        <div className="platform-selector">
+          <button
+            type="button"
+            className={`platform-button ${platform === 'LinkedIn' ? 'active' : ''}`}
+            onClick={() => setPlatform('LinkedIn')}
+          >
+            LinkedIn
+          </button>
+          <button
+            type="button"
+            className={`platform-button ${platform === 'Substack' ? 'active' : ''}`}
+            onClick={() => setPlatform('Substack')}
+          >
+            Substack
+          </button>
+        </div>
       </div>
 
-      <div className="form-group">
-        <label htmlFor="engagement-goal">Engagement Goal</label>
-        <select
-          id="engagement-goal"
-          className="form-select"
-          value={engagementGoal}
-          onChange={(e) => setEngagementGoal(e.target.value)}
+      <div className="workflow-steps">
+        <button
+          className="step-button"
+          onClick={onExtractOutline}
+          disabled={isExtracting || isAssembling}
         >
-          <option value="Thought leadership">Thought leadership</option>
-          <option value="Speaking">Speaking</option>
-          <option value="Lead-gen">Lead-gen</option>
-          <option value="Discussion">Discussion</option>
-        </select>
-      </div>
+          {isExtracting ? (
+            <span className="button-content">
+              <span className="spinner"></span>
+              Extracting outline... {extractElapsed}s
+            </span>
+          ) : (
+            '1) Extract Outline'
+          )}
+        </button>
 
-      <button
-        className="primary-button"
-        onClick={onReverseEngineer}
-        disabled={isProcessing}
-      >
-        {isProcessing ? 'Processing...' : 'Reverse Engineer'}
-      </button>
+        <button
+          className="step-button"
+          onClick={onGenerateDraft}
+          disabled={!hasOutline || isExtracting || isAssembling}
+        >
+          {isAssembling ? (
+            <span className="button-content">
+              <span className="spinner"></span>
+              Writing draft... {assembleElapsed}s
+            </span>
+          ) : (
+            '2) Generate Draft'
+          )}
+        </button>
+      </div>
 
       <p className="privacy-note">Your content stays private in this demo.</p>
     </div>
