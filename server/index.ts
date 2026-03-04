@@ -286,34 +286,30 @@ STRICT RULES:
 1. Write as the author, not as someone summarizing the author
 2. No meta language: "this article," "generated," "optimized," "here's what makes this compelling"
 3. Do NOT paraphrase quotes - include them exactly as written from outline.notable_quotes
-4. Quotes must be surrounded by quotation marks and appear as standalone sentences or within paragraphs
+4. Quotes must be surrounded by quotation marks and integrated naturally into the text
+5. Do NOT use placeholder labels like "Hook sentence", "Supporting sentence", "Closing question", etc.
+6. Write the actual post content directly
+
+QUOTE REQUIREMENTS:
+- Include at least two quotes from outline.notable_quotes
+- Quotes must appear exactly as written
+- Quotes must be surrounded by quotation marks
+- Example: "More examples provide more guidance but take more time."
+- Do NOT create placeholder quotes like "Second quoted sentence."
 
 LINKEDIN FORMATTING REQUIREMENTS:
-- First line must be a hook sentence (compelling, direct)
+- Start with a hook sentence derived from the thesis (compelling, direct)
 - No headings
 - Each paragraph must contain 1-2 sentences maximum
 - Insert a blank line between paragraphs (use \n\n for line breaks)
 - Do NOT produce a single block of text
 - Maximum 1 emoji total (optional)
 - Target length: 120-180 words
-- Closing question tied to thesis
+- End with a single grounded question related to the thesis
 
-Example structure:
-Hook sentence.
-
-Supporting sentence.
-
-"Quoted sentence from source."
-
-Explanation sentence.
-
-Another supporting sentence.
-
-"Second quoted sentence."
-
-Closing thought.
-
-Grounded question?
+OUTPUT REQUIREMENT:
+Return only the final LinkedIn post text.
+Do NOT include explanations, labels, template instructions, or formatting markers.
 
 SOURCE MATERIAL:
 {SOURCE}
