@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { Agent } from 'undici';
 
 dotenv.config();
 
@@ -8,6 +9,12 @@ const app = express();
 const PORT = process.env.PORT || 5176;
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'llama3.1:8b';
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
+
+const dispatcher = new Agent({
+  headersTimeout: 600000,
+  bodyTimeout: 600000,
+  connectTimeout: 60000,
+});
 
 const corsOptions = {
   origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
@@ -46,21 +53,47 @@ interface OllamaGenerateResponse {
   done: boolean;
 }
 
-async function callOllama(request: OllamaGenerateRequest): Promise<string> {
-  const response = await fetch(`${OLLAMA_URL}/api/generate`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(request),
-  });
+async function callOllama(request: OllamaGenerateRequest, routeLabel: string): Promise<string> {
+  const controller = new AbortController();
+  const startTime = Date.now();
+  let timeoutId: NodeJS.Timeout | null = null;
 
-  if (!response.ok) {
-    throw new Error(`Ollama API error: ${response.status} ${response.statusText}`);
+  const format = request.format || 'text';
+  console.log(`[ollama] start ${routeLabel} model=${request.model} format=${format}`);
+
+  try {
+    timeoutId = setTimeout(() => controller.abort(), 600000);
+
+    const response = await fetch(`${OLLAMA_URL}/api/generate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+      signal: controller.signal,
+      // @ts-ignore - undici dispatcher is valid but TypeScript doesn't recognize it
+      dispatcher,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Ollama API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json() as OllamaGenerateResponse;
+    const elapsed = Date.now() - startTime;
+    console.log(`[ollama] done ${routeLabel} ms=${elapsed}`);
+
+    return data.response;
+  } catch (error) {
+    const elapsed = Date.now() - startTime;
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    console.error(`[ollama] error ${routeLabel} ms=${elapsed} message=${message}`);
+    throw error;
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
   }
-
-  const data: OllamaGenerateResponse = await response.json();
-  return data.response;
 }
 
 const EXTRACTION_PROMPT = `You are an expert content analyzer. Your task is to extract ONLY what is explicitly stated in the provided source material.
@@ -193,7 +226,7 @@ app.post('/extract', async (req: Request, res: Response) => {
         temperature: 0,
         num_predict: 700,
       },
-    });
+    }, '/extract');
 
     let outline;
     try {
@@ -250,7 +283,7 @@ app.post('/assemble', async (req: Request, res: Response) => {
         temperature: 0.3,
         num_predict: numPredict,
       },
-    });
+    }, '/assemble');
 
     res.json({ draft });
   } catch (error) {
