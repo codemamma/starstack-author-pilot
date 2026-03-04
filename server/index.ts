@@ -224,37 +224,70 @@ Source material to analyze:
 
 Extract the outline as JSON:`;
 
-const ASSEMBLY_PROMPT_SUBSTACK = `You are writing a post in the author's natural voice. Expand the ideas from the outline into a full post that sounds like the author speaking directly.
+const ASSEMBLY_PROMPT_SUBSTACK = `You are writing a Substack article in the author's natural voice. Expand the ideas from the outline into a full article that sounds like the author speaking directly.
 
-GROUNDING RULES (VERY IMPORTANT):
-Use ONLY ideas present in:
+GROUNDING RULES (STRICT):
+Use ONLY information present in:
 - source
 - outline.bullets
 - outline.notable_quotes
 
-Do not introduce new explanations or analogies.
+Do NOT introduce new teaching examples such as:
+- stories
+- emails
+- lists
+- external explanations
 
-You MUST include at least two quotes from outline.notable_quotes.
-Quotes must appear exactly as written and must be surrounded by quotation marks.
+If a sentence cannot be supported by the outline or quotes, do not generate it.
+If you cannot follow these rules, stop generation.
+
+QUOTE REQUIREMENTS (MANDATORY):
+The article must include at least two quotes from outline.notable_quotes.
+
+Quotes must:
+- appear exactly as written
+- be surrounded by quotation marks
+- not be paraphrased
 
 Example:
 "More examples provide more guidance but take more time."
 
-If you cannot follow these rules, stop generation.
+Do NOT generate placeholder quotes.
 
 STRICT RULES:
 1. Write as the author, not as someone summarizing the author
 2. No meta language: "this article," "generated," "optimized," "here's what makes this compelling"
 3. Expand bullet points into full paragraphs using the author's voice
-4. Quotes must appear as natural sentences within paragraphs - never list quotes separately
+4. Quotes must appear as natural sentences within paragraphs
 
-SUBSTACK FORMATTING:
-- Start with the title
-- Write 3-5 short sections
-- Each section should use information directly from the outline
-- Paragraphs can be longer (3-5 sentences)
-- Target length: 300-450 words
-- End the article with a question based on the thesis
+SUBSTACK STRUCTURE REQUIREMENTS:
+The article must follow this structure:
+1. Title
+2. Short introduction paragraph
+3. 2-3 short body paragraphs
+4. Final paragraph with a grounded question
+
+Constraints:
+- Do NOT create long teaching explanations
+- Avoid subsection headings like "Zero-Shot Prompting"
+- Keep paragraphs 2-3 sentences maximum
+- Target length: 300-350 words
+- If output exceeds the limit, stop generation early
+
+ENDING RULE:
+The final sentence must be a single grounded question related to the thesis.
+
+Example:
+How do you decide when to use zero-shot versus few-shot prompting?
+
+OUTPUT REQUIREMENTS:
+Return plain article text only.
+
+Do NOT include:
+- template labels
+- explanations
+- instructions
+- markdown headings beyond the title
 
 SOURCE MATERIAL:
 {SOURCE}
@@ -262,7 +295,7 @@ SOURCE MATERIAL:
 OUTLINE TO ASSEMBLE:
 {OUTLINE}
 
-Write the Substack post as plain text:`;
+Write the Substack article as plain text:`;
 
 const ASSEMBLY_PROMPT_LINKEDIN = `You are writing a LinkedIn post in the author's natural voice. Expand the ideas from the outline into a full post that sounds like the author speaking directly.
 
