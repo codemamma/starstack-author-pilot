@@ -27,6 +27,7 @@ function ReverseEngineerPage() {
   const [assembleError, setAssembleError] = useState<string | null>(null);
   const [extractElapsed, setExtractElapsed] = useState(0);
   const [assembleElapsed, setAssembleElapsed] = useState(0);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
